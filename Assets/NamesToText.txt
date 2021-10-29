@@ -1,0 +1,39 @@
+i1:Oh crap, you weren't supposed to have that button. Uhhh... Do me a favor, will ya?
+i2e:Wait, you're only doing one module? Whatever... just look at this one.
+i2f:You know that module that's uhhm... No, not that one, just... look around, I'll tell you which one it is.
+i2f1:Not that one, no...
+i2f2:Keep going...
+i2f3:Yes! That's it.
+i3:Alright! Uh... lemme see here... wait a sec. What did I send to your expert? Oh, shoot, this is bad. I can fix this. Breathe, Bagels, breathe.
+i4a:Alright. Tell your expert to press the top right button on their module.
+i4b:Alright. Tell your expert to press the bottom right button on their module.
+i4c:Alright. Tell your expert to press the top left button on their module.
+i4d:Alright. Tell your expert to press the bottom left button on their module.
+i5:Lemme know when they're good. Wait... uh... you can't exactly talk, huh? Uh... just turn the alarm clock on, then? That should work.
+i6:Okay, that module from earlier, go highlight it. It should be a weird color.
+i7a:Tell your expert to press that colored button.
+i7b:Tell your expert to press the button with that word as its label.
+i8:Lemme know when that's done with the alarm clock again.
+i9:Great. Now I need your expert to type in some stuff.
+i10a:First, the bomb's Serial number.
+i10b:First, the bomb's number of batteries.
+i10c:First, the bomb's port count.
+i11:They should NOT press enter yet.
+i12a:Next, they need the bomb's module count. Be sure to include needies.
+i12b:Next, they need the bomb's indicator count.
+i12c:Next, they need the bomb's number of battery holders.
+i13:Now they should press enter. Once they get a number from there, let me know. Same way as before.
+i14:Okay. So the button that connected us, you'll need to hold it. Make sure you're ready when you do.
+i15a:Release on your expert's first digit.
+i15b:Release on your expert's second digit.
+i15c:Release on your expert's third digit.
+i15d:Release on your expert's fourth digit.
+i16:That's the seconds digit of the bomb's timer. Hold it again immediately.
+i17:Keep holding that for now... I gotta... oh, shoot. Hang in there for just a second, okay?
+i18a:Tell your expert to press Juliette on their keyboard.
+i18b:Tell your expert to press Foxtrot on their keyboard.
+i18c:Tell your expert to press Sierra on their keyboard.
+i18d:Tell your expert to press Lima on their keyboard.
+i19:Then they need to hold down that lever. Whatever they do, though, they should not release it. You can release your button once they do that.
+i20:Your module should have some letters on it now. They need to release their lever then type in those letters within three seconds, or you'll strike.
+i21:Alright, that's good. I'm gonna go now, and hope I don't get fired for this. Best of luck on the rest of this bomb!
