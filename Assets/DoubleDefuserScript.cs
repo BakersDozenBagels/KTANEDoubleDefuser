@@ -54,7 +54,7 @@ public class DoubleDefuserScript : MonoBehaviour
     private GameObject _chosenHighlightObj;
     private Action _chosenHighlightOnHighlight, _chosenHighlightOnHighlightEnded;
 
-    private const string URL = "http://localhost:8990";
+    private const string URL = "https://ktane.timwi.de/double-defuser";
 
 #if UNITY_EDITOR
     private bool _held = false;
