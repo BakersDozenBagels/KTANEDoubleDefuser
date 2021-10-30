@@ -19,10 +19,10 @@ MonoBehaviour:
 
     Requires an internet connection.
 
-    Impossible to EFM.
+    Technially possible to EFM.
 
 
     My (other) entry for the KTaNE Modding Jam #2: Themed Unusual Interaction.'
   version: 1.0
   outputFolder: build
-  previewImage: {fileID: 2800000, guid: 5a4ce0a3392b27940ad4ae508a989f54, type: 3}
+  previewImage: {fileID: 2800000, guid: b9f087b9cb8ef2c4198eaae6a95bd9f3, type: 3}
