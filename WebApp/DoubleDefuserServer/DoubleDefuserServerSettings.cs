@@ -5,6 +5,6 @@
         /// <summary>
         /// Time in seconds to store an entry.
         /// </summary>
-        public float Timeout { get; set; }
+        public float Timeout = 300;
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using RT.Json;
 using RT.Servers;
 
@@ -18,10 +19,10 @@ namespace DoubleDefuserServer
                 return new FileSystemHandler("C:/Users/benja/Desktop/ktanedoubledefuser/Manual/").Handle(req);
 #endif
 
-            if(req.Method == HttpMethod.Get)
+            if (req.Method == HttpMethod.Get)
                 return HttpResponse.Json(Json);
 
-            if(req.Post["DeviceHashcode"].Value == null)
+            if (req.Post["DeviceHashcode"].Value == null || req.Post.Sum(vc => vc.Value.Sum(v => v.Length)) > 1024)
                 return HttpResponse.PlainText("", HttpStatusCode._400_BadRequest);
 
             _stored.RemoveAll(tup => tup.nvc["DeviceHashcode"].Value == req.Post["DeviceHashcode"].Value);
