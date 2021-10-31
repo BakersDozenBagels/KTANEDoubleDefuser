@@ -784,7 +784,7 @@ TextMesh:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1405067962991638}
-  m_Text: PUSH IT!
+  m_Text: PUSH IT
   m_OffsetZ: 0
   m_CharacterSize: 0.005
   m_LineSpacing: 1
