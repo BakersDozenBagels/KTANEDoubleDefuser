@@ -37,7 +37,7 @@ public class DoubleDefuserScript : MonoBehaviour
     private Dictionary<string, string> _namesToText = new Dictionary<string, string>();
 
     private static int _idc, _requestCounter;
-    private static bool _mainMod;
+    private static bool _mainMod, _alarmStop;
     private static object prevClock = null;
     private int _state, _id = ++_idc, _thirdPress, _fourthPress, _digitIx, _releasedOn;
     private int[] _toReleaseOn;
@@ -49,7 +49,6 @@ public class DoubleDefuserScript : MonoBehaviour
     private Key _fifthPress;
     private Action _destroyThis, _pressHandler;
     private bool _alarmOn;
-    private Coroutine _waiting = null;
     private KMSelectable _chosenHighlight;
     private GameObject _chosenHighlightObj;
     private Action _chosenHighlightOnHighlight, _chosenHighlightOnHighlightEnded;
@@ -70,13 +69,13 @@ public class DoubleDefuserScript : MonoBehaviour
                 return;
             }
             _alarmOn = false;
-            _waiting = StartCoroutine(RealAlarmPress());
+            StartCoroutine(RealAlarmPress());
         };
 
         _namesToText = _namesToTextFile.text.Split('\n').Select(s => s.Split(':')).ToDictionary(a => a[0], a => a[1]);
 
 #if UNITY_EDITOR
-        FindObjectOfType<DummyScript>().onPress += () => { _waiting = StartCoroutine(RealAlarmPress()); };
+        FindObjectOfType<DummyScript>().onPress += () => { StartCoroutine(RealAlarmPress()); };
 #else
         try
         {
@@ -178,8 +177,8 @@ public class DoubleDefuserScript : MonoBehaviour
         }
         catch (Exception e)
         {
-            Debug.LogFormat("<Double Defuser #{0}> Exception: {1}", _id, e);
             Debug.LogFormat("[Double Defuser #{0}] Failed hooking alarm. Press the button to solve.", _id);
+            Debug.LogFormat("<Double Defuser #{0}> Exception: {1}", _id, e);
 
             GetComponent<KMSelectable>().Children[0].OnInteract += () => { _module.HandlePass(); return false; };
             return;
@@ -197,16 +196,19 @@ public class DoubleDefuserScript : MonoBehaviour
         _button.OnInteract += () =>
         {
             if(_held)
-                _waiting = StartCoroutine(HandleRelease());
+                StartCoroutine(HandleRelease());
             else
-                _waiting = StartCoroutine(HandlePress());
+            {
+                StopAllCoroutines();
+                StartCoroutine(HandlePress());
+            }
             _held ^= true;
             return false;
         };
 #else
         Debug.LogFormat("[Double Defuser #{0}] Push the button to begin.", _id);
-        _button.OnInteract += () => { _waiting = StartCoroutine(HandlePress()); return false; };
-        _button.OnInteractEnded += () => { _waiting = StartCoroutine(HandleRelease()); };
+        _button.OnInteract += () => { StopAllCoroutines(); StartCoroutine(HandlePress()); return false; };
+        _button.OnInteractEnded += () => { StartCoroutine(HandleRelease()); };
 #endif
 
         _reset.OnInteract += () => { StartCoroutine(ResetModule()); return false; };
@@ -214,8 +216,8 @@ public class DoubleDefuserScript : MonoBehaviour
 
     private IEnumerator ResetModule()
     {
-        if(_waiting != null)
-            StopCoroutine(_waiting);
+        StopAllCoroutines();
+
         if(_audioRef != null)
             _audioRef.StopSound();
         if(_chosenHighlightOnHighlight != null)
@@ -226,9 +228,8 @@ public class DoubleDefuserScript : MonoBehaviour
 
         _state = 0;
 
-        IEnumerator e = HideButtons();
-        while(e.MoveNext())
-            yield return e.Current;
+        StartCoroutine(HideButtons());
+        yield break;
     }
 
     private IEnumerator HandleRelease()
@@ -237,6 +238,14 @@ public class DoubleDefuserScript : MonoBehaviour
         Debug.LogFormat("<Double Defuser #{0}> State: {1}", _id, _state);
         if(_state == 10)
         {
+            if(!_alarmStop)
+            {
+                _alarmStop = true;
+                StopAllCoroutines();
+                StartCoroutine(HandleRelease());
+                yield break;
+            }
+            _alarmStop = false;
             if(!_toReleaseOn.Contains((int)_info.GetTime() % 10))
             {
                 Debug.LogFormat("[Double Defuser #{0}] You released at an incorrect time. Strike!", _id);
@@ -253,6 +262,14 @@ public class DoubleDefuserScript : MonoBehaviour
         }
         if(_state == 11)
         {
+            if(!_alarmStop)
+            {
+                _alarmStop = true;
+                StopAllCoroutines();
+                StartCoroutine(HandleRelease());
+                yield break;
+            }
+            _alarmStop = false;
             bool success = true;
             foreach(object e in GetRequest(r =>
             {
@@ -260,17 +277,17 @@ public class DoubleDefuserScript : MonoBehaviour
                 InstanceJSON ijson = json.First(j => j.DeviceHashcode == _deviceHashcode);
                 if(ijson.LeverDown == null)
                 {
-                    StartCoroutine(ResetModule());
                     Debug.LogFormat("[Double Defuser #{0}] You released while your expert wasn't holding. Strike!", _id);
                     _module.HandleStrike();
+                    StartCoroutine(ResetModule());
                     success = false;
                     return;
                 }
                 if(ijson.KeyPress.AsKey() != _fifthPress)
                 {
-                    StartCoroutine(ResetModule());
                     Debug.LogFormat("[Double Defuser #{0}] Your expert pressed the wrong button. Strike!", _id);
                     _module.HandleStrike();
+                    StartCoroutine(ResetModule());
                     success = false;
                     return;
                 }
@@ -279,9 +296,6 @@ public class DoubleDefuserScript : MonoBehaviour
             if(!success)
                 yield break;
             _state++;
-            Debug.LogFormat("[Double Defuser #{0}] Module solved.", _id);
-            _module.HandlePass();
-            StartCoroutine(HideButtons());
             foreach(object e in HandleRemoteLeverDown())
                 yield return e;
 
@@ -310,7 +324,7 @@ public class DoubleDefuserScript : MonoBehaviour
             return;
         }
         _alarmOn = false;
-        _waiting = StartCoroutine(RealAlarmPress());
+        StartCoroutine(RealAlarmPress());
     }
 
     private static bool HandleAlarmPress(DoubleDefuserScript module)
@@ -325,7 +339,15 @@ public class DoubleDefuserScript : MonoBehaviour
         Debug.LogFormat("<Double Defuser #{0}> State: {1}", _id, _state);
         if(_state == 3)
         {
-            _state++;
+            if(!_alarmStop)
+            {
+                _alarmStop = true;
+                StopAllCoroutines();
+                StartCoroutine(RealAlarmPress());
+                yield break;
+            }
+            _alarmStop = false;
+            _state += 2;
             yield return PlaySound("i6");
             _secondPress = (Color)UnityEngine.Random.Range(0, 8);
             Debug.LogFormat("<Double Defuser #{0}> _secondPress: {1}", _id, _secondPress);
@@ -343,15 +365,21 @@ public class DoubleDefuserScript : MonoBehaviour
             else
                 yield return PlaySound("i7a");
             yield return PlaySound("i8");
-            _audioRef.StopSound();
-            _state++;
             yield break;
         }
         if(_state == 5)
         {
+            if(!_alarmStop)
+            {
+                _alarmStop = true;
+                StopAllCoroutines();
+                StartCoroutine(RealAlarmPress());
+                yield break;
+            }
+            _alarmStop = false;
             Destroy(_chosenHighlightObj);
             _chosenHighlightObj = null;
-            _state++;
+            _state += 2;
             yield return PlaySound("i9");
             _thirdPress = UnityEngine.Random.Range(0, 3);
             _fourthPress = UnityEngine.Random.Range(0, 3);
@@ -381,13 +409,19 @@ public class DoubleDefuserScript : MonoBehaviour
                     break;
             }
             yield return PlaySound("i13");
-            _audioRef.StopSound();
-            _state++;
             yield break;
         }
         if(_state == 7)
         {
-            _state++;
+            if(!_alarmStop)
+            {
+                _alarmStop = true;
+                StopAllCoroutines();
+                StartCoroutine(RealAlarmPress());
+                yield break;
+            }
+            _alarmStop = false;
+            _state += 2;
             _digitIx = UnityEngine.Random.Range(0, 4);
             foreach(object e in GetRequest(r =>
             {
@@ -414,8 +448,6 @@ public class DoubleDefuserScript : MonoBehaviour
             }))
                 yield return e;
             yield return PlaySound("i14");
-            _audioRef.StopSound();
-            _state++;
             yield break;
         }
     }
@@ -471,8 +503,6 @@ public class DoubleDefuserScript : MonoBehaviour
         _button.AddInteractionPunch(0.1f);
         _audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, _button.transform);
 
-        if(_waiting != null)
-            StopCoroutine(_waiting);
         if(_state == 0)
         {
             _state++;
@@ -488,16 +518,19 @@ public class DoubleDefuserScript : MonoBehaviour
             }
             else
             {
-                yield return PlaySound("i2f");
                 bool isSelected = false;
                 _chosenHighlight.OnHighlight += () => { isSelected = true; };
+                _chosenHighlight.OnSelect += () => { isSelected = true; };
                 _chosenHighlight.OnHighlightEnded += () => { isSelected = false; };
+                _chosenHighlight.OnDeselect += () => { isSelected = false; };
+                yield return PlaySound("i2f");
                 while(!isSelected)
                 {
                     yield return PlaySound(UnityEngine.Random.Range(0, 2) == 1 ? "i2f1" : "i2f2");
                 }
                 yield return PlaySound("i2f3");
             }
+            _state += 2;
             yield return PlaySound("i3");
             _firstPress = (Direction)UnityEngine.Random.Range(0, 4);
             switch(_firstPress)
@@ -516,8 +549,6 @@ public class DoubleDefuserScript : MonoBehaviour
                     break;
             }
             yield return PlaySound("i5");
-            _audioRef.StopSound();
-            _state += 2;
             yield break;
         }
         if(_state == 9)
@@ -539,7 +570,6 @@ public class DoubleDefuserScript : MonoBehaviour
                     break;
             }
             yield return PlaySound("i16");
-            _audioRef.StopSound();
             yield break;
         }
         if(_state == 10)
@@ -574,7 +604,6 @@ public class DoubleDefuserScript : MonoBehaviour
                     break;
             }
             yield return PlaySound("i19");
-            _audioRef.StopSound();
             yield break;
         }
         if(_state >= 14)
@@ -620,7 +649,6 @@ public class DoubleDefuserScript : MonoBehaviour
             string text = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".ToCharArray().ToList().Shuffle().Take(4).Join("");
             _text.text = text;
             yield return PlaySound("i20");
-            _audioRef.StopSound();
             yield break;
         }
     }
@@ -631,15 +659,19 @@ public class DoubleDefuserScript : MonoBehaviour
         {
             _state++;
             if(passedChallenge)
+            {
                 Debug.LogFormat("[Double Defuser #{0}] Your expert successfully released their lever.", _id);
+                Debug.LogFormat("[Double Defuser #{0}] Module solved.", _id);
+                _module.HandlePass();
+                StartCoroutine(HideButtons());
+            }
             else
             {
                 Debug.LogFormat("[Double Defuser #{0}] Your expert unsuccessfully released their lever. Strike!", _id);
                 _module.HandleStrike();
-                StartCoroutine(HideButtons());
+                StartCoroutine(ResetModule());
             }
             yield return PlaySound("i21");
-            _audioRef.StopSound();
 
             yield break;
         }
@@ -656,7 +688,12 @@ public class DoubleDefuserScript : MonoBehaviour
         _buttons.transform.localPosition = new Vector3(0f, 0f, 0f);
     }
 
-    private WaitForSeconds PlaySound(string clipId)
+    private Coroutine PlaySound(string clipId)
+    {
+        return StartCoroutine(PlaySoundCoroutine(clipId));
+    }
+
+    private IEnumerator PlaySoundCoroutine(string clipId)
     {
         Debug.LogFormat("<Double Defuser #{0}> Playing sound \"{1}\".", _id, clipId);
         Debug.LogFormat("[Double Defuser #{0}] Playing sound \"{1}\".", _id, _namesToText[clipId]);
@@ -665,8 +702,12 @@ public class DoubleDefuserScript : MonoBehaviour
         _audioRef = _audio.PlaySoundAtTransformWithRef(clipId, transform);
         AudioClip clip = _clips.Where(c => c.name == clipId).FirstOrDefault();
         if(clip == null)
-            return new WaitForSeconds(2.5f);
-        return new WaitForSeconds(clip.length);
+            yield return new WaitForSeconds(2.5f);
+        else
+            yield return new WaitForSeconds(clip.length);
+        _audioRef.StopSound();
+        yield return null;
+        yield break;
     }
 
     private IEnumerator RevealButtons()
