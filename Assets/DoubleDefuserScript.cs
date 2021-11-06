@@ -129,7 +129,7 @@ public class DoubleDefuserScript : MonoBehaviour
                 }
                 catch
                 {
-                    Debug.LogFormat("[Double Defuser #{0}] Very, very bad error. This module will likely stop working until you restart your game. Please report this ASAP.", _id);
+                    Debug.LogFormat("<Double Defuser #{0}> Very, very bad error. This module will likely stop working until you restart your game. Please report this ASAP.", _id);
                 }
             };
             _info.OnBombSolved += delegate ()
@@ -143,7 +143,7 @@ public class DoubleDefuserScript : MonoBehaviour
                 }
                 catch
                 {
-                    Debug.LogFormat("[Double Defuser #{0}] Very, very bad error. This module will likely stop working until you restart your game. Please report this ASAP.", _id);
+                    Debug.LogFormat("<Double Defuser #{0}> Very, very bad error. This module will likely stop working until you restart your game. Please report this ASAP.", _id);
                 }
             };
             _game.OnStateChange += delegate (KMGameInfo.State state)
@@ -157,7 +157,7 @@ public class DoubleDefuserScript : MonoBehaviour
                 }
                 catch
                 {
-                    Debug.LogFormat("[Double Defuser #{0}] Very, very bad error. This module will likely stop working until you restart your game. Please report this ASAP.", _id);
+                    Debug.LogFormat("<Double Defuser #{0}> Very, very bad error. This module will likely stop working until you restart your game. Please report this ASAP.", _id);
                 }
             };
             _destroyThis += delegate ()
@@ -171,7 +171,7 @@ public class DoubleDefuserScript : MonoBehaviour
                 }
                 catch
                 {
-                    Debug.LogFormat("[Double Defuser #{0}] Very, very bad error. This module will likely stop working until you restart your game. Please report this ASAP.", _id);
+                    Debug.LogFormat("<Double Defuser #{0}> Very, very bad error. This module will likely stop working until you restart your game. Please report this ASAP.", _id);
                 }
             };
         }
