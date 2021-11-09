@@ -670,8 +670,10 @@ public class DoubleDefuserScript : MonoBehaviour
                 Debug.LogFormat("[Double Defuser #{0}] Your expert unsuccessfully released their lever. Strike!", _id);
                 _module.HandleStrike();
                 StartCoroutine(ResetModule());
+                yield break;
             }
             yield return PlaySound("i21");
+            _audioRef.StopSound();
 
             yield break;
         }
