@@ -23,6 +23,6 @@ MonoBehaviour:
 
 
     My (other) entry for the KTaNE Modding Jam #2: Themed Unusual Interaction.'
-  version: 1.5
+  version: 1.6
   outputFolder: build
   previewImage: {fileID: 2800000, guid: b9f087b9cb8ef2c4198eaae6a95bd9f3, type: 3}

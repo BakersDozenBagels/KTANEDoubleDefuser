@@ -229,7 +229,7 @@ public class DoubleDefuserScript : MonoBehaviour
         _state = 0;
 
         StartCoroutine(HideButtons());
-        yield break;
+        yield return null;
     }
 
     private IEnumerator HandleRelease()
